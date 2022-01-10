@@ -1,0 +1,44 @@
+#myBoard {
+
+}
+
+.square {
+    position: absolute;
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-select: none;
+}
+
+.piece {
+    z-index: 1;
+    position: absolute;
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-select: none;
+
+    cursor: pointer;
+}
+
+body .highlighted_1 {
+    background-color: rgba(118, 138, 248, 0.7);
+}
+
+body .highlighted_2 {
+    background-color: rgba(118, 248, 187, 0.7);
+}
+
+body .highlighted_3 {
+    background-color: rgba(248, 118, 129, 0.7);
+}
+
+.black {
+    background: #B5643B;
+}
+
+.white {
+    background: #FEE6C0;
+}
