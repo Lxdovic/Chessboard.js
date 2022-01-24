@@ -1,4 +1,5 @@
-var Chessboard = function(id) {
+var Chessboard = function(id, settings) {
+    const SIDE = settings?.side || 'w'
     const CHESS = new Chess()
     const ALPHABET = 'abcdefgh'
     const IMG_PATH = './chesspieces/'
@@ -28,11 +29,49 @@ var Chessboard = function(id) {
         }
     }
 
+    var checkPosition = function() {
+        var board = CHESS.board()
+
+        for (var i = 0; i < board.length; i++) {
+            for (var j = 0; j < board[i].length; j++) {
+                var square = BOARD_ELM.childNodes[j + 8 * i].id
+                var piece = BOARD_ELM.childNodes[j + 8 * i].getElementsByClassName('piece')[0]
+
+                var sq = CHESS.get(square)
+
+                if (sq == null) {
+                    if (piece != null) { piece.remove() }
+
+                    continue
+                }
+
+                else if (piece == null) { 
+                    var square_ = BOARD_ELM.childNodes[j + 8 * i]
+                    // square_.appendChild(piece(sq)) Can't access f piece() for some reason :'(
+                        
+                    var p = document.createElement('img')
+                    var width = parseInt(BOARD_ELM.style.width, 10) / 8
+                    var height = parseInt(BOARD_ELM.style.height, 10) / 8
+                    p.id = sq.color + sq.type
+                    p.classList.add('piece')
+                    p.src = IMG_PATH + sq.color + sq.type + '.png'
+                    p.style.left = 0
+                    p.style.top = 0
+                    p.style.width = width + 'px'
+                    p.style.height = height + 'px'
+                    p.isSliding = false
+
+                    square_.appendChild(p)
+                }
+            }
+        }
+    }
+
     var square = function(i, j) {
         var square = document.createElement('div')
         var width = parseInt(BOARD_ELM.style.width, 10) / 8
         var height = parseInt(BOARD_ELM.style.height, 10) / 8
-        square.id = ALPHABET[j] + (8 - i)
+        square.id = ALPHABET[(SIDE == 'w' ? j : 8 - j)] + (SIDE == 'w' ? 8 - i : i + 1)
         square.classList.add('square')
         square.classList.add((j + i) % 2 == 0 ? 'white' : 'black')
         square.style.width = width + 'px'
@@ -72,14 +111,16 @@ var Chessboard = function(id) {
         return hdiv
     }
 
-    return {
+    var chessboard = {
         load: function() {
             var board = CHESS.board()
 
             for (var i = 0; i < board.length; i++) {
                 for (var j = 0; j < board[i].length; j++) {
 
-                    var sq = square(i, j)
+                    if (SIDE == 'b') { var sq = square(7 - i, 7 - j) }
+
+                    else { var sq = square(i, j) }
 
                     BOARD_ELM.appendChild(sq)
 
@@ -99,7 +140,7 @@ var Chessboard = function(id) {
                 BOARD_ELM.drag = true
                 BOARD_ELM.selected = e.target
                 BOARD_ELM.from = e.target.parentElement.id
-                BOARD_ELM.selected.style.zIndex = 2
+                e.target.style.zIndex = 2
 
                 var moves = CHESS.moves({ square: e.target.parentNode.id, verbose: true })
                 
@@ -133,6 +174,11 @@ var Chessboard = function(id) {
 
                 var x = Math.round((e.clientX - BOARD_BOX.x) / BOARD_ELM.selected.width - .5)
                 var y = Math.round((e.clientY - BOARD_BOX.y) / BOARD_ELM.selected.height - .5)
+
+                if (SIDE == 'b') { y = 7 - y; x = 7 - x }
+
+                console.log(x, ALPHABET[x] + (8 - y))
+
                 BOARD_ELM.to = ALPHABET[x] + (8 - y)
 
                 var move = CHESS.move({from: BOARD_ELM.from, to: BOARD_ELM.to, promotion: 'q'})
@@ -156,7 +202,7 @@ var Chessboard = function(id) {
                         piece.isSliding = false
                         piece.style.left = 0
                         piece.style.top = 0
-                        piece.zIndex = 1
+                        piece.style.zIndex = 1
                     }
 
                     return
@@ -168,6 +214,7 @@ var Chessboard = function(id) {
 
                 square_elm.appendChild(BOARD_ELM.selected)
 
+                BOARD_ELM.selected.style.zIndex = 1
                 BOARD_ELM.selected.style.left = 0
                 BOARD_ELM.selected.style.top = 0
                 BOARD_ELM.selected = null
@@ -185,6 +232,8 @@ var Chessboard = function(id) {
                     case 'b': AUDIO.move.play(); break
                     case 'n': AUDIO.move.play(); break
                 }
+
+                checkPosition()
             }
         },
 
@@ -210,7 +259,7 @@ var Chessboard = function(id) {
             slide.onfinish = function() {
                 to_square.appendChild(piece)
                 piece.isSliding = false
-                piece.zIndex = 1
+                piece.style.zIndex = 1
             }
             
             from_square.getElementsByClassName('highlight_div')[0].classList.add('highlighted_3')
@@ -225,6 +274,10 @@ var Chessboard = function(id) {
                 case 'b': AUDIO.move.play(); break
                 case 'n': AUDIO.move.play(); break
             }
+
+            checkPosition()
         }
     }
+
+    return chessboard
 }
